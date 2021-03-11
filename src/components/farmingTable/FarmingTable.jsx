@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-boolean-value */
 import React, { useEffect, useContext, useState, useCallback } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
 import ethers from 'ethers';
@@ -297,7 +298,7 @@ const FarmingTable = ({ showAsCards }) => {
       ) : null}
       {state.display ? (
         <TableContainer>
-          {sortedSummary.length === 0 ? (
+          {sortedSummary.length === 0 && state.iFarmInfo === null ? (
             <NoAssetTable>
               <div className="header">
                 <p>You currently are not staking any assets</p>
@@ -324,6 +325,26 @@ const FarmingTable = ({ showAsCards }) => {
                   );
                 })}
               </MainTableHeader>
+              {state.iFarmInfo !== null ? (
+                <MainTableRow key={state.iFarmInfo.address}>
+                  <div className="name">{state.iFarmInfo.name}</div>
+                  <div className="active">true</div>
+                  <div className="earned-rewards">N/A</div>
+                  <div className="staked">
+                    {parseFloat(state.iFarmInfo.balanceWallet).toFixed(6)}
+                  </div>
+                  <div className="pool">N/A</div>
+                  <div className="value">{prettyBalance(state.iFarmInfo.usdValueOf)}</div>
+                  <div className="unstaked">N/A</div>
+                  <input disabled type="number" />
+                  <button className="button stake-but" type="button" disabled={true}>
+                    Stake
+                  </button>
+                  <button className="button withdraw-but" type="button" disabled={true}>
+                    Withdraw
+                  </button>
+                </MainTableRow>
+              ) : null}
               {sortedSummary.map(summary => (
                 <MainTableRow key={summary.address}>
                   <div className="name">{summary.name}</div>

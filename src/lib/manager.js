@@ -1,7 +1,7 @@
 import ethers from 'ethers';
 import data from './data/deploys';
 import RewardsPool from './pool';
-import { UnderlyingBalances } from './tokens';
+import { UnderlyingBalances, getTokenFromAsset } from './tokens';
 import { weekOne, test, weekTwo, activePools, inactivePools, allPastPools } from './poolUtils';
 
 /**
@@ -185,6 +185,44 @@ export class PoolManager {
     });
   }
 
+  /**
+   * Return information about Ifarm assets for the current address
+   * @param {string} address user address
+   * @return {Object|null} iFarm token
+   */
+  async getIfarmBalance(address) {
+    const iFARM = data.assetByName('iFARM');
+    const token = getTokenFromAsset(iFARM, this.provider);
+    const underlayingAsset = getTokenFromAsset(iFARM.underlyingAsset, this.provider);
+    const tokenOwned = await token.balanceOf(address);
+    if (tokenOwned.isZero()) {
+      return null;
+    }
+    try {
+      const pricePerFullShare = await token.getPricePerFullShare();
+      const balanceWallet = ethers.utils.formatUnits(tokenOwned, iFARM.decimals);
+      const underlayingTokenOwned =
+        balanceWallet * ethers.utils.formatUnits(pricePerFullShare, iFARM.decimals);
+      // hack price to allow adding it in global balance and put back the price as usdBalance
+      const usdPrice = await underlayingAsset.usdValueOf(pricePerFullShare);
+      const currentUsdValue = underlayingTokenOwned * ethers.utils.formatUnits(usdPrice, 6);
+      return {
+        name: 'iFarm (wallet)',
+        address: token.address,
+        baseUnit: token.baseUnit,
+        balanceWallet,
+        balance: tokenOwned,
+        pricePerFullShare,
+        underlayingTokenOwned,
+        currentUsdValue,
+        usdValueOf: ethers.BigNumber.from(Math.round(currentUsdValue.toFixed(6) * 1000000)),
+      };
+    } catch (err) {
+      console.log('iFARM parse error on your wallet');
+      console.log(err);
+      return null;
+    }
+  }
   /**
    * @param {string} address user address
    * @return {Array} rewards

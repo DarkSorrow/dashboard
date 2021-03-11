@@ -4,6 +4,7 @@ import harvest from '../../lib/index';
 import HarvestContext from '../../Context/HarvestContext';
 import { darkTheme, lightTheme } from '../../styles/appStyles';
 import FarmCard from './FarmCard';
+import IFarmCard from './iFarmCard';
 import {
   FarmGroupContainerWrapper,
   NoFarmSummariesFound,
@@ -14,6 +15,7 @@ import {
 } from './FarmCardStyles';
 
 const { utils } = harvest;
+
 
 function FarmCardGroupContainer({ showAsTables }) {
   const { state, setState, isRefreshing, isCheckingBalance, refresh } = useContext(HarvestContext);
@@ -70,8 +72,9 @@ function FarmCardGroupContainer({ showAsTables }) {
         </PanelTabContainerRight>
       </Tabs>
 
-      {state.summaries.length ? (
+      {state.summaries.length || state.iFarmInfo !== null ? (
         <FarmGroupContainerWrapper>
+          {state.iFarmInfo !== null ? <IFarmCard key={state.iFarmInfo.address} /> : null}
           {state.summaries.map(utils.prettyPosition).map(summary => {
             return <FarmCard key={summary.address} summary_information={summary} />;
           })}

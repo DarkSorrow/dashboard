@@ -43,7 +43,9 @@ export function prettyPosition(sum) {
     if (underlyingBalanceOf) {
       if (underlyingBalanceOf.balances) {
         const underlyingKey = Object.keys(underlyingBalanceOf.balances)[0];
-        return formatUnits(underlyingBalanceOf.balances[underlyingKey], decimals);
+        if (underlyingKey) {
+          return formatUnits(underlyingBalanceOf.balances[underlyingKey], decimals);
+        }
       }
     }
     return 0;

@@ -73,6 +73,7 @@ function App() {
     address: '',
     summaries: [],
     underlyings: [],
+    iFarmInfo: null,
     usdValue: 0,
     error: { message: null, type: null, display: false },
     theme: window.localStorage.getItem('HarvestFinance:Theme'),
@@ -119,27 +120,32 @@ function App() {
 
     state.manager
       .summary(state.address)
-      .then(summaries =>
-        summaries.filter(
+      .then(summaries => {
+        return summaries.filter(
           p =>
             !p.summary.earnedRewards.isZero() ||
             !p.summary.stakedBalance.isZero() ||
             (p.summary.isActive && !p.summary.unstakedBalance.isZero()),
-        ),
-      )
+        );
+      })
       .then(summaries => {
         let total = ethers.BigNumber.from(0);
         summaries.forEach(pos => {
           total = total.add(pos.summary.usdValueOf);
         });
+        return Promise.all([state.manager.getIfarmBalance(state.address), total, summaries]);
+      })
+      .then(([iFarmInfo, total, summaries]) => {
+        if (iFarmInfo) {
+          total = total.add(iFarmInfo.usdValueOf);
+        }
         setState(prevState => ({
           ...prevState,
           summaries,
           usdValue: total,
+          iFarmInfo,
         }));
         setRefreshing(false);
-
-        return summaries;
       })
       .catch(() => {
         refresh();
@@ -207,6 +213,7 @@ function App() {
       address: '',
       summaries: [],
       underlyings: [],
+      iFarmInfo: null,
       usdValue: 0,
       apy: 0,
       farmPrice: 0,

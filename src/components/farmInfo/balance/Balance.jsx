@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 import React, { useEffect, useState, useContext } from "react";
 import HarvestContext from "../../../Context/HarvestContext";
 import styled, { ThemeProvider } from "styled-components";
@@ -60,9 +61,11 @@ const Balance = () => {
 
     for (let i = 0; i < state.summaries.length; i++) {
       ub = ub.add(state.summaries[i].summary.usdValueOf);
-
-      setUserBalance(ub);
     }
+    if (state.iFarmInfo) {
+      ub = ub.add(state.iFarmInfo.usdValueOf);
+    }
+    setUserBalance(ub);
   };
 
   
